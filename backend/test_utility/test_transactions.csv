@@ -1,0 +1,35 @@
+date,description,amount,type
+2026-01-01,Salary Credit,60000,income
+2026-01-01,House Rent January,15000,expense
+2026-01-02,Zomato order,420,expense
+2026-01-02,Uber ride to office,180,expense
+2026-01-03,Electricity bill January,2300,expense
+2026-01-03,Amazon shopping headphones,2499,expense
+2026-01-04,Swiggy food order,510,expense
+2026-01-05,Netflix subscription,649,expense
+2026-01-06,Ola cab evening ride,220,expense
+2026-01-07,Grocery store purchase,1850,expense
+2026-01-08,Medical store pharmacy,760,expense
+2026-01-09,Movie ticket PVR,480,expense
+2026-01-10,Restaurant dinner,1200,expense
+2026-01-11,Metro card recharge,300,expense
+2026-01-12,Mobile phone bill,499,expense
+2026-01-13,Amazon shopping clothes,3299,expense
+2026-01-14,Gym membership monthly,1800,expense
+2026-01-15,Swiggy food order,450,expense
+2026-01-16,Petrol fuel refill,1500,expense
+2026-01-17,Doctor consultation,900,expense
+2026-01-18,Spotify subscription,119,expense
+2026-01-19,Coffee cafe visit,280,expense
+2026-01-20,Bus travel ticket,120,expense
+2026-01-21,Flipkart electronics purchase,4999,expense
+2026-01-22,Water bill January,650,expense
+2026-01-23,Zomato food order,390,expense
+2026-01-24,Snacks and beverages,260,expense
+2026-01-25,Internet broadband bill,999,expense
+2026-01-26,Uber airport ride,850,expense
+2026-01-27,Online course subscription,1999,expense
+2026-01-28,Restaurant lunch,950,expense
+2026-01-29,Medicine pharmacy,540,expense
+2026-01-30,Entertainment arcade games,700,expense
+2026-01-31,Freelance payment received,12000,income

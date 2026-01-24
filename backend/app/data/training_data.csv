@@ -1,0 +1,235 @@
+description,category
+zomato order,food
+swiggy food delivery,food
+restaurant bill,food
+dinner at hotel,food
+coffee shop payment,food
+pizza order online,food
+dominos order,food
+cafe latte purchase,food
+street food snacks,food
+lunch meal payment,food
+breakfast order,food
+food court payment,food
+burger king bill,food
+kfc order,food
+mcdonalds purchase,food
+canteen food expense,food
+snacks purchase,food
+bakery items,food
+meal combo order,food
+food delivery charge,food
+restaurant takeaway,food
+evening snacks,food
+uber ride,transport
+ola cab booking,transport
+metro ticket,transport
+bus pass recharge,transport
+fuel petrol pump,transport
+diesel refill,transport
+auto rickshaw fare,transport
+train ticket booking,transport
+flight ticket payment,transport
+parking charges,transport
+taxi fare,transport
+fuel station payment,transport
+highway toll,transport
+ola auto ride,transport
+airport cab,transport
+local bus ticket,transport
+railway booking,transport
+transport fare,transport
+cab ride expense,transport
+petrol bunk,transport
+bike fuel,transport
+travel expense,transport
+amazon purchase,shopping
+flipkart order,shopping
+clothing store bill,shopping
+online shopping payment,shopping
+electronics purchase,shopping
+shoe store payment,shopping
+mall shopping,shopping
+mobile accessories,shopping
+grocery shopping,shopping
+fashion store bill,shopping
+myntra order,shopping
+ajio shopping,shopping
+retail store purchase,shopping
+supermarket bill,shopping
+home essentials shopping,shopping
+cosmetics purchase,shopping
+lifestyle store bill,shopping
+gift shopping,shopping
+online cart checkout,shopping
+apparel purchase,shopping
+department store bill,shopping
+daily needs shopping,shopping
+netflix subscription,entertainment
+spotify premium,entertainment
+movie ticket booking,entertainment
+concert ticket,entertainment
+gaming purchase,entertainment
+amazon prime subscription,entertainment
+hotstar subscription,entertainment
+bookmyshow ticket,entertainment
+theme park ticket,entertainment
+music streaming payment,entertainment
+cinema hall ticket,entertainment
+online game recharge,entertainment
+playstation game purchase,entertainment
+xbox subscription,entertainment
+youtube premium,entertainment
+apple music subscription,entertainment
+event entry pass,entertainment
+standup comedy ticket,entertainment
+arcade games payment,entertainment
+streaming service charge,entertainment
+video rental payment,entertainment
+entertainment expense,entertainment
+house rent payment,rent
+flat rent transfer,rent
+monthly rent,rent
+pg accommodation rent,rent
+office rent,rent
+shop rent payment,rent
+room rent,rent
+rent paid via upi,rent
+apartment rent,rent
+lease payment,rent
+tenant rent,rent
+building rent,rent
+rental transfer,rent
+commercial rent,rent
+hostel rent,rent
+rent for accommodation,rent
+warehouse rent,rent
+store rent,rent
+residential rent,rent
+property rent,rent
+electricity bill payment,utilities
+water bill payment,utilities
+wifi recharge,utilities
+broadband bill,utilities
+mobile recharge,utilities
+gas cylinder booking,utilities
+lpg bill,utilities
+internet bill,utilities
+postpaid mobile bill,utilities
+dth recharge,utilities
+power bill,utilities
+utility payment,utilities
+electric bill online,utilities
+phone bill,utilities
+wifi bill payment,utilities
+household utilities,utilities
+gas connection bill,utilities
+energy bill,utilities
+network recharge,utilities
+tv recharge,utilities
+municipal bill,utilities
+service utility charge,utilities
+hospital bill,healthcare
+doctor consultation fee,healthcare
+medical store purchase,healthcare
+pharmacy bill,healthcare
+medicine purchase,healthcare
+health insurance premium,healthcare
+clinic visit payment,healthcare
+diagnostic test charges,healthcare
+dental treatment bill,healthcare
+eye checkup payment,healthcare
+health checkup,healthcare
+lab test bill,healthcare
+xray scan charges,healthcare
+medical emergency expense,healthcare
+surgery bill,healthcare
+vaccination charges,healthcare
+therapy session payment,healthcare
+physician visit,healthcare
+medical supplies purchase,healthcare
+hospital charges,healthcare
+healthcare expense,healthcare
+doctor visit bill,healthcare
+salary credited,salary
+monthly salary,salary
+company payroll,salary
+salary from employer,salary
+income salary credit,salary
+salary deposit,salary
+corporate salary,salary
+monthly pay credit,salary
+salary received,salary
+payroll transfer,salary
+organization salary,salary
+employee salary credit,salary
+office payroll,salary
+pay cheque credited,salary
+salary for month,salary
+income payroll,salary
+wages credited,salary
+fixed salary deposit,salary
+salary payment,salary
+employer salary,salary
+freelance payment received,freelance
+client payment,freelance
+project payout,freelance
+contract work payment,freelance
+freelancing income,freelance
+upwork payment,freelance
+fiverr income,freelance
+consulting fee received,freelance
+invoice payment,freelance
+remote work payment,freelance
+client invoice cleared,freelance
+project fee credited,freelance
+contract income,freelance
+service fee received,freelance
+freelance earnings,freelance
+online work payment,freelance
+gig income,freelance
+freelance transfer,freelance
+client settlement,freelance
+work payment credited,freelance
+stock dividend received,investment
+mutual fund returns,investment
+interest earned,investment
+fixed deposit interest,investment
+crypto profit,investment
+share market gains,investment
+investment income,investment
+sip returns,investment
+bond interest payment,investment
+capital gains credited,investment
+equity dividend credited,investment
+stock profit,investment
+trading gains,investment
+investment payout,investment
+market returns,investment
+fd maturity amount,investment
+interest credit,investment
+investment redemption,investment
+share dividend payout,investment
+profit from stocks,investment
+mutual fund profit,investment
+portfolio gains,investment
+unknown transaction,uncategorized
+miscellaneous payment,uncategorized
+other expense,uncategorized
+manual entry,uncategorized
+unidentified transaction,uncategorized
+random transfer,uncategorized
+adjustment entry,uncategorized
+test transaction,uncategorized
+wallet transfer,uncategorized
+unclear description,uncategorized
+misc credit,uncategorized
+unknown debit,uncategorized
+system adjustment,uncategorized
+balance correction,uncategorized
+temporary entry,uncategorized
+internal transfer,uncategorized
+reversal entry,uncategorized
+unknown reference,uncategorized
+misc entry,uncategorized
+not specified,uncategorized

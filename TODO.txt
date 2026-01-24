@@ -1,0 +1,6 @@
+Payment Gateway / Create Transactions GUI
+Categorization user correction loop & retrain model
+Budget suggestor
+on dashboard, categories chart - show active spending categories + others(sum of all non-active categories)
+Transactions - show monthwise transactions, total spent and total earned and balance
+Dashboard - Change month/period option
