@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, X, Home, TrendingDown, PieChart, Target, MessageCircle, LogOut } from 'lucide-react'
+import { Menu, X, Home, TrendingDown, PieChart, Target, MessageCircle, LogOut, Wallet } from 'lucide-react'
 
 export default function Sidebar({ open, setOpen, setIsAuthenticated }) {
   const menuItems = [
     { name: 'Dashboard', icon: Home, path: '/dashboard' },
+    { name: 'Accounts', icon: Wallet, path: '/accounts' },
     { name: 'Transactions', icon: TrendingDown, path: '/expenses' },
     { name: 'Budget', icon: PieChart, path: '/budget' },
     { name: 'Goals', icon: Target, path: '/goals' },

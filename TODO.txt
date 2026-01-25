@@ -1,3 +1,14 @@
+Issues:
+//Local db being accessed issue
+//Some issue with local and prod. misconfigurations leading to database issues
+//Fix auth jwt tokens (old tokens still valid)
+
+Working on:
+//Create account after new registration
+//Manage accounts page
+Decide what happens when account is deleted (transactions, user profile, savings, etc.)
+
+To-do:
 Payment Gateway / Create Transactions GUI
 Categorization user correction loop & retrain model
 Budget suggestor
