@@ -44,12 +44,12 @@ export default function Auth({ setIsAuthenticated }) {
           }, 1500)
         } catch (regErr) {
           // Backend returns password validation error details
-          const errDetail = regErr.response?.data?.detail || 'Registration failed. Try again.'
+          const errDetail = regErr.response.data.detail || 'Registration failed. Try again.'
           setError(errDetail)
         }
       }
     } catch (err) {
-      const errDetail = err.response?.data?.detail || (isLogin ? 'Invalid credentials' : 'Registration failed. Try again.')
+      const errDetail = err.response.data.detail || (isLogin ? 'Invalid credentials' : 'Registration failed. Try again.')
       setError(errDetail)
     } finally {
       setLoading(false)

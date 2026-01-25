@@ -15,6 +15,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post("/register", response_model=UserResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
+    print(user.model_dump())
     # Validate password strength
     is_valid, error_msg = validate_password_strength(user.password)
     if not is_valid:

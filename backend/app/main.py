@@ -42,6 +42,8 @@ app.include_router(budget_suggestions.router)
 app.include_router(analytics.router)
 app.include_router(accounts.router)
 
+print(settings.DATABASE_URL)
+
 @app.on_event("startup")
 def create_tables():
     """Ensure database tables exist before serving requests."""

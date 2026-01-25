@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from typing import Optional
 
 class BudgetCreate(BaseModel):
@@ -10,4 +10,5 @@ class BudgetCreate(BaseModel):
 class BudgetResponse(BudgetCreate):
     id: int
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
