@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -22,6 +22,8 @@ class AccountUpdate(BaseModel):
 class AccountResponse(AccountBase):
     id: int
     created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
     class Config:
         orm_mode = True
