@@ -2,14 +2,17 @@ Issues:
 //Local db being accessed issue
 //Some issue with local and prod. misconfigurations leading to database issues
 //Fix auth jwt tokens (old tokens still valid)
-400 Bad Request error during login/register.
+//400 Bad Request error during login/register.
 
 Working on:
+URGENT: SEED CATEGORIES INTO DB
 //Create account after new registration
 //Manage accounts page
 Decide what happens when account is deleted (transactions, user profile, savings, etc.)
 
 To-do:
+Category Manager - CRUD operations, category insights
+Use caching for categories, user accounts, budgets etc.
 Payment Gateway / Create Transactions GUI
 Categorization user correction loop & retrain model
 Budget suggestor
