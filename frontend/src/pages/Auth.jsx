@@ -20,6 +20,12 @@ export default function Auth({ setIsAuthenticated }) {
       if (isLogin) {
         const data = await loginUser(email, password)
         localStorage.setItem('token', data.access_token)
+        // Store has_accounts flag for first-time users
+        const hasAccounts = !!data.has_accounts
+        localStorage.setItem('has_accounts', String(hasAccounts))
+        if (!hasAccounts) {
+          localStorage.setItem('first_login_no_accounts', 'true')
+        }
         setIsAuthenticated(true)
       } else {
         if (password !== confirmPassword) {
@@ -27,17 +33,24 @@ export default function Auth({ setIsAuthenticated }) {
           setLoading(false)
           return
         }
-        await registerUser(email, password)
-        setError('Registration successful. Redirecting to login...')
-        setTimeout(() => {
-          setIsLogin(true)
-          setPassword('')
-          setConfirmPassword('')
-          setError('')
-        }, 1500)
+        try {
+          await registerUser(email, password)
+          setError('Registration successful. Redirecting to login...')
+          setTimeout(() => {
+            setIsLogin(true)
+            setPassword('')
+            setConfirmPassword('')
+            setError('')
+          }, 1500)
+        } catch (regErr) {
+          // Backend returns password validation error details
+          const errDetail = regErr.response.data.detail || 'Registration failed. Try again.'
+          setError(errDetail)
+        }
       }
     } catch (err) {
-      setError(isLogin ? 'Invalid credentials' : 'Registration failed. Try again.')
+      const errDetail = err.response.data.detail || (isLogin ? 'Invalid credentials' : 'Registration failed. Try again.')
+      setError(errDetail)
     } finally {
       setLoading(false)
     }
@@ -149,6 +162,30 @@ export default function Auth({ setIsAuthenticated }) {
                     className="w-full pl-10 pr-10 py-3 bg-white bg-opacity-10 border border-blue-300 border-opacity-30 rounded-lg text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Password Requirements (Register Only) */}
+            {!isLogin && password && (
+              <div className="bg-blue-900 bg-opacity-30 border border-blue-400 border-opacity-30 rounded-lg p-3 text-xs text-blue-100">
+                <p className="font-semibold mb-2">Password must contain:</p>
+                <ul className="space-y-1">
+                  <li className={`flex items-center gap-2 ${password.length >= 8 ? 'text-green-400' : 'text-blue-200'}`}>
+                    <span>{password.length >= 8 ? '✓' : '○'}</span> At least 8 characters
+                  </li>
+                  <li className={`flex items-center gap-2 ${/[A-Z]/.test(password) ? 'text-green-400' : 'text-blue-200'}`}>
+                    <span>{/[A-Z]/.test(password) ? '✓' : '○'}</span> One uppercase letter
+                  </li>
+                  <li className={`flex items-center gap-2 ${/[a-z]/.test(password) ? 'text-green-400' : 'text-blue-200'}`}>
+                    <span>{/[a-z]/.test(password) ? '✓' : '○'}</span> One lowercase letter
+                  </li>
+                  <li className={`flex items-center gap-2 ${/[0-9]/.test(password) ? 'text-green-400' : 'text-blue-200'}`}>
+                    <span>{/[0-9]/.test(password) ? '✓' : '○'}</span> One digit
+                  </li>
+                  <li className={`flex items-center gap-2 ${/[!@#$%^&*()_+\-=\[\]{};:'"\\|,.<>/?]/.test(password) ? 'text-green-400' : 'text-blue-200'}`}>
+                    <span>{/[!@#$%^&*()_+\-=\[\]{};:'"\\|,.<>/?]/.test(password) ? '✓' : '○'}</span> One special character
+                  </li>
+                </ul>
               </div>
             )}
 
