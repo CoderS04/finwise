@@ -30,9 +30,10 @@ export const fetchAccounts = async () => {
   return response.data;
 };
 
-export const uploadCsv = async (file) => {
+export const uploadCsv = async (file, accountId) => {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("account_id", accountId);
 
   const response = await api.post("/transactions/upload", formData);
   return response.data;

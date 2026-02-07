@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Filter, Plus, Trash2, Pencil } from "lucide-react";
+import { Search, Filter, Plus, Trash2, Pencil, Upload, X } from "lucide-react";
 import Header from "../components/Header";
 import {
   fetchTransactions,
   deleteTransaction,
   fetchCategories,
   fetchAccounts,
+  uploadCsv,
 } from "../api/transactionsApi";
 import TransactionModal from "../components/TransactionModal";
 
@@ -35,6 +36,16 @@ export default function ExpenseTracker() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editing, setEditing] = useState(undefined);
   const [loading, setLoading] = useState(true);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState(null);
+  const [selectedUploadAccount, setSelectedUploadAccount] = useState("");
+  
+  // Month/Year selector state
+  const today = new Date();
+  const [month, setMonth] = useState(today.getMonth() + 1);
+  const [year, setYear] = useState(today.getFullYear());
 
   useEffect(() => {
     const loadMetadata = async () => {
@@ -92,7 +103,17 @@ export default function ExpenseTracker() {
     const matchesSearch = (tx.description || "")
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+    
+    // Filter by month and year
+    let matchesMonth = true;
+    if (tx.transaction_date) {
+      const txDate = new Date(tx.transaction_date);
+      const txMonth = txDate.getMonth() + 1;
+      const txYear = txDate.getFullYear();
+      matchesMonth = txMonth === month && txYear === year;
+    }
+    
+    return matchesCategory && matchesSearch && matchesMonth;
   });
 
   const totalSpent = filteredTransactions
@@ -111,6 +132,47 @@ export default function ExpenseTracker() {
     await deleteTransaction(id);
     if (editing?.id === id) setEditing(undefined);
     loadTransactions();
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setUploadFile(file);
+    }
+  };
+
+  const handleUploadSubmit = async () => {
+    if (!uploadFile) {
+      setUploadMessage({ type: "error", text: "Please select a file" });
+      return;
+    }
+
+    if (!selectedUploadAccount) {
+      setUploadMessage({ type: "error", text: "Please select an account" });
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setUploadMessage(null);
+      await uploadCsv(uploadFile, selectedUploadAccount);
+      setUploadMessage({ type: "success", text: "Transactions uploaded successfully!" });
+      setUploadFile(null);
+      setSelectedUploadAccount("");
+      setTimeout(() => {
+        setShowUploadModal(false);
+        setUploadMessage(null);
+        loadTransactions();
+      }, 1500);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      setUploadMessage({
+        type: "error",
+        text: error.response?.data?.detail || error.response?.data?.error || "Failed to upload transactions. Please check the file format and account selection.",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const formatDate = (iso) => {
@@ -145,6 +207,36 @@ export default function ExpenseTracker() {
     <div className="p-6 lg:p-8 space-y-6">
       <Header title="Expense Tracker" subtitle="Track and manage all your transactions" />
 
+      {/* Month/Year Selector */}
+      <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="flex items-center gap-4">
+          <p className="text-sm font-semibold text-gray-700">
+            Viewing {new Date(year, month - 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+          </p>
+          <div className="flex items-center gap-2">
+            <select
+              value={month}
+              onChange={(e) => setMonth(Number(e.target.value))}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
+                <option key={m} value={m}>
+                  {new Date(year, m - 1).toLocaleDateString("en-IN", { month: "long" })}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              min="2000"
+              max="2100"
+              value={year}
+              onChange={(e) => setYear(Number(e.target.value))}
+              className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Search / Filters / Quick Add */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-center">
@@ -177,10 +269,17 @@ export default function ExpenseTracker() {
             </select>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              <Upload size={18} />
+              Upload File
+            </button>
             <button
               onClick={() => setEditing(null)}
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
             >
               <Plus size={18} />
               Add Transaction
@@ -208,6 +307,131 @@ export default function ExpenseTracker() {
           </div>
         </div>
       </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Upload Transactions</h2>
+              <button
+                onClick={() => {
+                  setShowUploadModal(false);
+                  setUploadFile(null);
+                  setUploadMessage(null);
+                  setSelectedUploadAccount("");
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* File Input */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Select CSV File
+              </label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer">
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="file-upload"
+                />
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <Upload size={32} className="mx-auto text-gray-400 mb-2" />
+                  <p className="text-gray-600 font-medium">
+                    {uploadFile ? uploadFile.name : "Click to select or drag a CSV file"}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    CSV format with columns: date, description, amount, type
+                  </p>
+                </label>
+              </div>
+            </div>
+
+            {/* Account Selection */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Select Account *
+              </label>
+              <select
+                value={selectedUploadAccount}
+                onChange={(e) => setSelectedUploadAccount(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">-- Choose an account --</option>
+                {accounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.account_name} ({account.account_type})
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-2">
+                All transactions in this file will be added to the selected account
+              </p>
+            </div>
+
+            {/* Message */}
+            {uploadMessage && (
+              <div
+                className={`mb-6 p-3 rounded-lg text-sm font-medium ${
+                  uploadMessage.type === "success"
+                    ? "bg-green-50 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-700 border border-red-200"
+                }`}
+              >
+                {uploadMessage.text}
+              </div>
+            )}
+
+            {/* Help Text */}
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg text-sm text-blue-700 border border-blue-200">
+              <p className="font-semibold mb-2">CSV Format Requirements:</p>
+              <ul className="list-disc list-inside space-y-1 text-xs">
+                <li>Column 1: <code>date</code> (YYYY-MM-DD)</li>
+                <li>Column 2: <code>description</code> (transaction description)</li>
+                <li>Column 3: <code>amount</code> (numeric value)</li>
+                <li>Column 4: <code>type</code> (expense or income)</li>
+              </ul>
+              <p className="mt-3 text-xs">
+                <a
+                  href="/sample_transactions.csv"
+                  download
+                  className="underline hover:text-blue-900 font-semibold"
+                >
+                  Download sample CSV file →
+                </a>
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleUploadSubmit}
+                disabled={!uploadFile || !selectedUploadAccount || uploading}
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed"
+              >
+                {uploading ? "Uploading..." : "Upload"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowUploadModal(false);
+                  setUploadFile(null);
+                  setUploadMessage(null);
+                  setSelectedUploadAccount("");
+                }}
+                disabled={uploading}
+                className="flex-1 bg-gray-300 hover:bg-gray-400 disabled:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Form Modal */}
       <TransactionModal

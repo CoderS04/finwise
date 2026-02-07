@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { DollarSign, X } from 'lucide-react'
 import Header from '../components/Header'
 import { getAccounts, createAccount, updateAccount, deleteAccount } from '../api/accountsApi'
 
@@ -10,6 +11,9 @@ export default function AccountManager({ setFirstLoginNoAccounts }) {
   const [newAccount, setNewAccount] = useState({ account_name: '', account_type: '', currency: 'INR' })
   const [editingId, setEditingId] = useState(null)
   const [editingData, setEditingData] = useState({ account_name: '', account_type: '', currency: 'INR' })
+  const [showBalanceModal, setShowBalanceModal] = useState(false)
+  const [balanceEditId, setBalanceEditId] = useState(null)
+  const [newBalance, setNewBalance] = useState('')
   const navigate = useNavigate()
   const isFirstLogin = localStorage.getItem('first_login_no_accounts') === 'true'
 
@@ -82,6 +86,32 @@ export default function AccountManager({ setFirstLoginNoAccounts }) {
       setAccounts(accounts.filter(a => a.id !== id))
     } catch (e) {
       setError('Failed to delete account')
+    }
+  }
+
+  const openBalanceModal = (acc) => {
+    setBalanceEditId(acc.id)
+    setNewBalance(acc.balance || '')
+    setShowBalanceModal(true)
+  }
+
+  const closeBalanceModal = () => {
+    setShowBalanceModal(false)
+    setBalanceEditId(null)
+    setNewBalance('')
+  }
+
+  const saveBalance = async () => {
+    if (!newBalance || isNaN(newBalance)) {
+      setError('Please enter a valid balance')
+      return
+    }
+    try {
+      const updated = await updateAccount(balanceEditId, { balance: parseFloat(newBalance) })
+      setAccounts(accounts.map(a => (a.id === balanceEditId ? updated : a)))
+      closeBalanceModal()
+    } catch (e) {
+      setError('Failed to update balance')
     }
   }
 
@@ -170,6 +200,7 @@ export default function AccountManager({ setFirstLoginNoAccounts }) {
                   <div className="flex-1">
                     <p className="font-semibold text-gray-800">{acc.account_name}</p>
                     <p className="text-sm text-gray-600">Type: {acc.account_type || '—'} • Currency: {acc.currency || 'INR'}</p>
+                    <p className="text-lg font-bold text-green-600 mt-1">₹{(acc.balance || 0).toLocaleString('en-IN')}</p>
                   </div>
                 )}
                 <div className="flex gap-2 justify-end">
@@ -180,6 +211,9 @@ export default function AccountManager({ setFirstLoginNoAccounts }) {
                     </>
                   ) : (
                     <>
+                      <button onClick={() => openBalanceModal(acc)} className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md flex items-center gap-1">
+                        <DollarSign size={16} /> Balance
+                      </button>
                       <button onClick={() => startEdit(acc)} className="bg-blue-600 text-white px-3 py-2 rounded-md">Edit</button>
                       <button onClick={() => removeAccount(acc.id)} className="bg-red-600 text-white px-3 py-2 rounded-md">Delete</button>
                     </>
@@ -190,6 +224,63 @@ export default function AccountManager({ setFirstLoginNoAccounts }) {
           </div>
         )}
       </div>
+
+      {/* Balance Update Modal */}
+      {showBalanceModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <DollarSign size={28} className="text-green-600" />
+                Update Balance
+              </h2>
+              <button
+                onClick={closeBalanceModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                New Balance
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={newBalance}
+                onChange={(e) => setNewBalance(e.target.value)}
+                placeholder="Enter amount"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-lg"
+                autoFocus
+              />
+              <p className="text-xs text-gray-500 mt-2">Enter the current account balance</p>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={saveBalance}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-semibold transition-colors"
+              >
+                Update Balance
+              </button>
+              <button
+                onClick={closeBalanceModal}
+                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-3 rounded-lg font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

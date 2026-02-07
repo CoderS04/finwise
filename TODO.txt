@@ -3,19 +3,32 @@ Issues:
 //Some issue with local and prod. misconfigurations leading to database issues
 //Fix auth jwt tokens (old tokens still valid)
 //400 Bad Request error during login/register.
+//Goal allocation -> When savings are updated for a month, the new amount is added to the goal, instead of recalculating the goal allocation. Possible fix: Check goal_allocations table, if there is entry for the month whose savings are updated, then update that entry with the new goal allocation.
+//Also, goals table is not being updated.
 
 Working on:
-URGENT: SEED CATEGORIES INTO DB
+//URGENT: SEED CATEGORIES INTO DB
 //Create account after new registration
 //Manage accounts page
 Decide what happens when account is deleted (transactions, user profile, savings, etc.)
+Goal Planning System + LLM integration
+AI Chatbot
+Payment Gateway / Create transaction
+Remove type col from categories
+Verify complete logic
 
 To-do:
-Category Manager - CRUD operations, category insights
-Use caching for categories, user accounts, budgets etc.
 Payment Gateway / Create Transactions GUI
+Category Manager - CRUD operations, category insights, custom categories(add category to category table, add category id to user table)
+In transactions, budgets, dashboard, separately show income categories and expense categories
+No budgets for income categories.
+For new transaction, show categories based on transaction type (income/expense)
+Use caching for categories, user accounts, budgets etc.
+Upload transactions
 Categorization user correction loop & retrain model
-Budget suggestor
-on dashboard, categories chart - show active spending categories + others(sum of all non-active categories)
+On dashboard, categories chart - show active spending categories + others(sum of all non-active categories)
 Transactions - show monthwise transactions, total spent and total earned and balance
 Dashboard - Change month/period option
+Budget suggestor
+Phase 7 - Goal Planning
+Phase 8 - AI Chatbot
