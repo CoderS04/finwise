@@ -53,7 +53,9 @@ def detect_savings(
         return {
             "amount_saved": 0,
             "reason": "insufficient_surplus",
-            "surplus": surplus
+            "surplus": surplus,
+            "income": income,
+            "expense": expense
         }
 
     # Case 2: User explicitly confirms savings
@@ -63,7 +65,9 @@ def detect_savings(
         return {
             "amount_saved": round(safe_amount, 2),
             "reason": "user_confirmed",
-            "surplus": surplus
+            "surplus": surplus,
+            "income": income,
+            "expense": expense
         }
 
     # Case 3: Inferred savings (default)
@@ -72,5 +76,7 @@ def detect_savings(
     return {
         "amount_saved": round(inferred, 2),
         "reason": "inferred",
-        "surplus": surplus
+        "surplus": surplus,
+        "income": income,
+        "expense": expense
     }

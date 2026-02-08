@@ -28,6 +28,13 @@ def detect_and_allocate_savings(
     if result["savings"]["amount_saved"] <= 0:
         return {
             "message": "No savings detected",
+            "savings": {
+                "amount_saved": result["savings"]["amount_saved"],
+                "reason": result["savings"]["reason"],
+                "surplus": result["savings"]["surplus"],
+                "income": result["savings"].get("income"),
+                "expense": result["savings"].get("expense")
+            },
             "details": result
         }
 
@@ -37,6 +44,11 @@ def detect_and_allocate_savings(
 
     return {
         "savings": {
+            "amount_saved": savings_record.amount_saved,
+            "reason": result["savings"]["reason"],
+            "surplus": result["savings"]["surplus"],
+            "income": result["savings"].get("income"),
+            "expense": result["savings"].get("expense"),
             "amount": savings_record.amount_saved,
             "source": savings_record.source,
             "month": savings_record.month,

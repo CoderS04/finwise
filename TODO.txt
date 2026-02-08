@@ -12,10 +12,14 @@ Working on:
 //Manage accounts page
 Decide what happens when account is deleted (transactions, user profile, savings, etc.)
 Goal Planning System + LLM integration
-AI Chatbot
+AI Chatbot - backend ready, check how to deploy llm on cloud, add frontend, build a robust chatbot with better understanding and more detailed responses.
 Payment Gateway / Create transaction
 Remove type col from categories
 Verify complete logic
+
+Ai chatbot
+//Logo, name, tagline - budget smarter not harder
+Deploy
 
 To-do:
 Payment Gateway / Create Transactions GUI

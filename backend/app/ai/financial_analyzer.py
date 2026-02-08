@@ -75,25 +75,49 @@ def analyze_user_finances(user_id: int, months: list[int] = None) -> dict:
             Budget.user_id == user_id
         ).all()
 
+        # Map category IDs to names for budget labels
+        from app.models.category import Category
+        category_ids = list({b.category_id for b in budgets if b.category_id is not None})
+        category_map = {}
+        if category_ids:
+            categories = db.query(Category).filter(Category.id.in_(category_ids)).all()
+            category_map = {c.id: c.name for c in categories}
+
         budget_summary = []
         total_budget = 0
         total_spent = 0
 
         for budget in budgets:
+            # Skip budgets with no category (budget.category_id is None)
+            if budget.category_id is None:
+                continue
+            
+            # Calculate month boundaries for this budget's month/year
+            month_start = datetime(budget.year, budget.month, 1)
+            if budget.month == 12:
+                month_end = datetime(budget.year + 1, 1, 1)
+            else:
+                month_end = datetime(budget.year, budget.month + 1, 1)
+            
+            # Only count expenses from the budget's specific month
             spent = db.query(func.sum(Transaction.amount)).filter(
                 Transaction.user_id == user_id,
-                Transaction.budget_id == budget.id,
-                Transaction.transaction_type == "expense"
+                Transaction.category_id == budget.category_id,
+                Transaction.transaction_type == "expense",
+                Transaction.transaction_date >= month_start,
+                Transaction.transaction_date < month_end
             ).scalar() or 0
 
+            budget_name = category_map.get(budget.category_id, "Category Budget")
+
             budget_summary.append({
-                "name": budget.name,
-                "limit": budget.limit_amount,
+                "name": budget_name,
+                "limit": budget.monthly_limit,
                 "spent": spent,
-                "remaining": budget.limit_amount - spent,
-                "percentage": round((spent / budget.limit_amount * 100), 1) if budget.limit_amount > 0 else 0
+                "remaining": budget.monthly_limit - spent,
+                "percentage": round((spent / budget.monthly_limit * 100), 1) if budget.monthly_limit > 0 else 0
             })
-            total_budget += budget.limit_amount
+            total_budget += budget.monthly_limit
             total_spent += spent
 
         # Fetch goals (static, not month-specific)

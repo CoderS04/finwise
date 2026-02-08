@@ -8,7 +8,7 @@ export default function AccountManager({ setFirstLoginNoAccounts }) {
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [newAccount, setNewAccount] = useState({ account_name: '', account_type: '', currency: 'INR' })
+  const [newAccount, setNewAccount] = useState({ account_name: '', account_type: '', currency: 'INR', initial_balance: '' })
   const [editingId, setEditingId] = useState(null)
   const [editingData, setEditingData] = useState({ account_name: '', account_type: '', currency: 'INR' })
   const [showBalanceModal, setShowBalanceModal] = useState(false)
@@ -41,9 +41,13 @@ export default function AccountManager({ setFirstLoginNoAccounts }) {
       return
     }
     try {
-      const created = await createAccount(newAccount)
+      const payload = {
+        ...newAccount,
+        initial_balance: newAccount.initial_balance === '' ? 0 : parseFloat(newAccount.initial_balance)
+      }
+      const created = await createAccount(payload)
       setAccounts([created, ...accounts])
-      setNewAccount({ account_name: '', account_type: '', currency: 'INR' })
+      setNewAccount({ account_name: '', account_type: '', currency: 'INR', initial_balance: '' })
       // If first login, clear flag and notify parent, then redirect to dashboard
       if (isFirstLogin) {
         localStorage.removeItem('first_login_no_accounts')
@@ -129,7 +133,7 @@ export default function AccountManager({ setFirstLoginNoAccounts }) {
       {/* Create New Account */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-lg font-semibold mb-4 text-gray-800">Create New Account</h3>
-        <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
             <label className="block text-sm text-gray-600 mb-1">Account Name</label>
             <input
@@ -157,6 +161,18 @@ export default function AccountManager({ setFirstLoginNoAccounts }) {
               value={newAccount.currency}
               onChange={(e) => setNewAccount({ ...newAccount, currency: e.target.value })}
               className="w-full border rounded-md px-3 py-2"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Initial Balance</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={newAccount.initial_balance}
+              onChange={(e) => setNewAccount({ ...newAccount, initial_balance: e.target.value })}
+              className="w-full border rounded-md px-3 py-2"
+              placeholder="0.00"
             />
           </div>
           <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md">Add Account</button>

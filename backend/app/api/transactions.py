@@ -54,10 +54,26 @@ def create_transaction(
             if tx.transaction_type == "income":
                 account.balance += tx.amount
             else:  # expense
+                # Prevent negative balance
+                if account.balance < tx.amount:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Insufficient balance. Available: ₹{account.balance:.2f}, Required: ₹{tx.amount:.2f}"
+                    )
                 account.balance -= tx.amount
     
     db.commit()
     db.refresh(new_tx)
+    
+    # Recalculate monthly savings for this month/year
+    try:
+        tx_month = new_tx.transaction_date.month
+        tx_year = new_tx.transaction_date.year
+        detect_and_store_savings(db, user.id, tx_month, tx_year)
+    except Exception as e:
+        # Log but don't fail - savings calculation error shouldn't prevent transaction creation
+        print(f"Warning: Savings recalculation failed for {tx_month}/{tx_year}: {e}")
+    
     return new_tx
 
 @router.get("/", response_model=list[TransactionResponse])
@@ -67,6 +83,10 @@ def list_transactions(
     limit: int = 50,
     offset: int = 0
 ):
+    if limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit cannot exceed 1000")
+    if offset < 0:
+        raise HTTPException(status_code=400, detail="Offset cannot be negative")
     return (
         db.query(Transaction)
         .filter(Transaction.user_id == user.id)
@@ -91,6 +111,25 @@ def update_transaction(
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
+    # Store old values for balance recalculation
+    old_amount = transaction.amount
+    old_type = transaction.transaction_type
+    old_account_id = transaction.account_id
+    old_date = transaction.transaction_date
+
+    # If account is changing, revert old account balance first
+    if old_account_id:
+        old_account = db.query(Account).filter(
+            Account.id == old_account_id,
+            Account.user_id == user.id
+        ).first()
+        if old_account:
+            # Reverse old transaction
+            if old_type == "income":
+                old_account.balance -= old_amount
+            else:
+                old_account.balance += old_amount
+
     # Update all fields from tx.dict()
     for key, value in tx.dict().items():
         setattr(transaction, key, value)
@@ -102,8 +141,41 @@ def update_transaction(
         if category:
             transaction.category_id = category.id
 
+    # Apply new transaction to account
+    if tx.account_id:
+        new_account = db.query(Account).filter(
+            Account.id == tx.account_id,
+            Account.user_id == user.id
+        ).first()
+        if new_account:
+            if tx.transaction_type == "income":
+                new_account.balance += tx.amount
+            else:  # expense
+                # Prevent negative balance
+                if new_account.balance < tx.amount:
+                    # Rollback old account if different
+                    if old_account_id and old_account_id != tx.account_id:
+                        old_account.balance = old_account.balance + old_amount if old_type == "income" else old_account.balance - old_amount
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Insufficient balance. Available: ₹{new_account.balance:.2f}, Required: ₹{tx.amount:.2f}"
+                    )
+                new_account.balance -= tx.amount
+
     db.commit()
     db.refresh(transaction)
+    
+    # Recalculate monthly savings for the transaction month (and old month if changed)
+    try:
+        tx_month = transaction.transaction_date.month
+        tx_year = transaction.transaction_date.year
+        detect_and_store_savings(db, user.id, tx_month, tx_year)
+        if old_date and (old_date.month != tx_month or old_date.year != tx_year):
+            detect_and_store_savings(db, user.id, old_date.month, old_date.year)
+    except Exception as e:
+        # Log but don't fail - savings calculation error shouldn't prevent transaction update
+        print(f"Warning: Savings recalculation failed for {tx_month}/{tx_year}: {e}")
+    
     return transaction
 
 @router.delete("/{tx_id}")
@@ -136,6 +208,14 @@ def delete_transaction(
 
     db.delete(transaction)
     db.commit()
+    
+    # Recalculate monthly savings after deletion
+    try:
+        tx_month = transaction.transaction_date.month
+        tx_year = transaction.transaction_date.year
+        detect_and_store_savings(db, user.id, tx_month, tx_year)
+    except Exception as e:
+        print(f"Warning: Savings recalculation failed for {tx_month}/{tx_year}: {e}")
     return {"message": "Transaction deleted"}
 
 @router.post("/upload")
@@ -146,7 +226,7 @@ def upload_transactions(
     user = Depends(get_current_user)
 ):
     if not account_id:
-        return {"error": "account_id is required"}
+        raise HTTPException(status_code=400, detail="account_id is required")
     
     # Verify account belongs to user
     account = db.query(Account).filter(
@@ -155,32 +235,82 @@ def upload_transactions(
     ).first()
     
     if not account:
-        return {"error": "Account not found or does not belong to user"}
+        raise HTTPException(status_code=404, detail="Account not found or does not belong to user")
     
-    df = pd.read_csv(file.file)
-
-    for _, row in df.iterrows():
-        category_name, _ = categorize_transaction(row["description"])
-        category = db.query(Category).filter(Category.name.ilike(category_name)).first()
-        tx = Transaction(
-            user_id=user.id,
-            account_id=account_id,
-            amount=row["amount"],
-            transaction_type=row["type"],
-            description=row["description"],
-            category_id=category.id,
-            transaction_date=row["date"]
+    try:
+        df = pd.read_csv(file.file)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid CSV file: {str(e)}")
+    
+    # Validate required columns
+    required_columns = {"amount", "type", "description", "date"}
+    missing_columns = required_columns - set(df.columns)
+    if missing_columns:
+        raise HTTPException(
+            status_code=400,
+            detail=f"CSV must have columns: {', '.join(required_columns)}. Missing: {', '.join(missing_columns)}"
         )
-        db.add(tx)
+    
+    # Validate data types and values
+    try:
+        df["amount"] = pd.to_numeric(df["amount"], errors="raise")
+        df["date"] = pd.to_datetime(df["date"], errors="raise")
         
-        # Update account balance for each transaction
-        if row["type"] == "income":
-            account.balance += row["amount"]
-        else:  # expense
-            account.balance -= row["amount"]
-
+        # Check for negative amounts
+        if (df["amount"] <= 0).any():
+            raise HTTPException(status_code=400, detail="All amounts must be greater than zero")
+        
+        # Validate transaction types
+        valid_types = {"income", "expense"}
+        invalid_types = set(df["type"].unique()) - valid_types
+        if invalid_types:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid transaction types: {', '.join(invalid_types)}. Must be 'income' or 'expense'"
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid data format: {str(e)}")
+    
+    # Process transactions
+    transaction_count = 0
+    for _, row in df.iterrows():
+        try:
+            category_name, _ = categorize_transaction(row["description"])
+            category = db.query(Category).filter(Category.name.ilike(category_name)).first()
+            
+            tx = Transaction(
+                user_id=user.id,
+                account_id=account_id,
+                amount=row["amount"],
+                transaction_type=row["type"],
+                description=row["description"],
+                category_id=category.id if category else None,
+                transaction_date=row["date"]
+            )
+            db.add(tx)
+            
+            # Update account balance for each transaction
+            if row["type"] == "income":
+                account.balance += row["amount"]
+            else:  # expense
+                if account.balance < row["amount"]:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Row {_ + 2}: Insufficient balance for transaction of ₹{row['amount']}"
+                    )
+                account.balance -= row["amount"]
+            
+            transaction_count += 1
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error processing row {_ + 2}: {str(e)}")
+    
     db.commit()
-
+    
+    # Detect and store savings
     detected_month = None
     detected_year = None
     if "date" in df.columns:
@@ -189,16 +319,20 @@ def upload_transactions(
         if pd.notna(max_date):
             detected_month = int(max_date.month)
             detected_year = int(max_date.year)
-
+    
     if detected_month and detected_year:
-        detect_and_store_savings(
-            db,
-            user.id,
-            detected_month,
-            detected_year
-        )
-
-    return {"message": "Transactions uploaded successfully"}
+        try:
+            detect_and_store_savings(
+                db,
+                user.id,
+                detected_month,
+                detected_year
+            )
+        except Exception as e:
+            # Log but don't fail - savings detection error shouldn't prevent transaction upload
+            print(f"Warning: Savings detection failed: {e}")
+    
+    return {"message": f"{transaction_count} transactions uploaded successfully"}
 
 @router.get("/categories")
 def get_categories(

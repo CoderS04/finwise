@@ -7,7 +7,7 @@ class Account(Base):
     __tablename__ = "accounts"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     account_name = Column(String, nullable=False)
     account_type = Column(String)
     currency = Column(String, default="INR")

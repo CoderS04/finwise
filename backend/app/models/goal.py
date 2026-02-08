@@ -16,3 +16,8 @@ class Goal(Base):
 
     target_date = Column(Date, nullable=False)
     is_completed = Column(Boolean, default=False)
+
+    @property
+    def deadline_exceeded(self):
+        from datetime import date
+        return self.target_date < date.today() and not self.is_completed

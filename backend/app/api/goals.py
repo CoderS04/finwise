@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
@@ -21,6 +21,21 @@ def create_goal(
     db: Session = Depends(get_db),
     user = Depends(get_current_user)
 ):
+    # Validate target amount is positive
+    if data.target_amount <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Target amount must be greater than zero"
+        )
+    
+    # Validate target date is in the future
+    from datetime import date
+    if data.target_date <= date.today():
+        raise HTTPException(
+            status_code=400,
+            detail="Target date must be in the future"
+        )
+    
     goal = Goal(user_id=user.id, **data.dict())
     db.add(goal)
     db.commit()
@@ -39,7 +54,7 @@ def delete_goal(
     ).first()
     
     if not goal:
-        return {"error": "Goal not found"}
+        raise HTTPException(status_code=404, detail="Goal not found")
     
     db.delete(goal)
     db.commit()

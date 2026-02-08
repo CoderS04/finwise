@@ -5,7 +5,7 @@ class MonthlySavings(Base):
     __tablename__ = "monthly_savings"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     month = Column(Integer)
     year = Column(Integer)
 

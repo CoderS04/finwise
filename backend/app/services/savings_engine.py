@@ -53,6 +53,18 @@ def detect_and_store_savings(
 			user_id
 		)
 		db.commit()
+	else:
+		# If savings are zero or negative, remove any existing record and allocations
+		existing = db.query(MonthlySavings).filter(
+			MonthlySavings.user_id == user_id,
+			MonthlySavings.month == month,
+			MonthlySavings.year == year
+		).first()
+		if existing:
+			# Reset allocations tied to the existing savings record
+			recalculate_savings_allocations(db, existing, user_id)
+			db.delete(existing)
+			db.commit()
 
 	income, expense = (
 		result.get("income", None),

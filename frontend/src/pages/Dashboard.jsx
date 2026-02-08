@@ -80,11 +80,19 @@ export default function Dashboard() {
       setDetecting(true)
       setDetectMessage(null)
       const result = await detectSavings(detectMonth, detectYear, customSavings)
-      const saved = result?.savings?.amount_saved || 0
-      const reason = result?.savings?.reason || 'inferred'
+      const saved =
+        result?.savings?.amount ??
+        result?.savings?.amount_saved ??
+        result?.details?.savings?.amount_saved ??
+        0
+      const reason =
+        result?.savings?.reason ??
+        result?.savings?.source ??
+        result?.details?.savings?.reason ??
+        'inferred'
       setDetectMessage({
         type: 'success',
-        text: `Detected savings: ₹${saved.toLocaleString('en-IN')} (${reason})`
+        text: `Detected savings: ₹${Number(saved).toLocaleString('en-IN')} (${reason})`
       })
       await loadAnalytics()
     } catch (err) {

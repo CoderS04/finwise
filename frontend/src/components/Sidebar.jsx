@@ -34,8 +34,10 @@ export default function Sidebar({ open, setOpen, setIsAuthenticated }) {
         } bg-gray-900 text-white transition-all duration-300 overflow-hidden lg:w-64 flex flex-col`}
       >
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-blue-400">FinWise</h1>
-          <p className="text-sm text-gray-400">Your Finance Assistant</p>
+          <div className="flex items-center gap-3 mb-2">
+            <img src="/logo.png" alt="Finzo" className="h-10 w-auto" />
+          </div>
+          <p className="text-xs text-gray-300 italic font-semibold">budget smarter not harder</p>
         </div>
 
         <nav className="mt-10 px-4 flex-1">
