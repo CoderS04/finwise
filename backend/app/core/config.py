@@ -9,6 +9,21 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     ENVIRONMENT: str = "development"  # development, staging, production
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:5173"  # Comma-separated
+    
+    # LLM Provider Configuration
+    LLM_PROVIDER: str = "ollama"  # ollama, openai, or gemini
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "neural-chat"
+    OPENAI_API_KEY: Optional[str] = None
+    GEMINI_API_KEY: Optional[str] = None
+    GEMINI_MODEL: str = "gemini-1.5-flash"
+    
+    # Rate Limiting
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_REQUESTS_PER_MINUTE: int = 10
+    
+    # Debug
+    DEBUG: bool = False
 
     class Config:
         env_file = ".env"

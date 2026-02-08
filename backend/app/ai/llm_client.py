@@ -1,15 +1,18 @@
 """
-LLM Client: Hybrid Provider Support (Ollama + OpenAI)
+LLM Client: Hybrid Provider Support (Ollama + OpenAI + Gemini)
 
 Supports multiple LLM providers for flexible deployment:
 - Ollama: Local development (requires Ollama service)
 - OpenAI: Production deployment (requires OPENAI_API_KEY)
+- Gemini: Google AI production deployment (requires GEMINI_API_KEY)
 
 Environment Variables:
-- LLM_PROVIDER: "ollama" (default, dev) or "openai" (production)
+- LLM_PROVIDER: "ollama" (default, dev), "openai", or "gemini" (production)
 - OLLAMA_BASE_URL: Ollama service endpoint (default: http://localhost:11434)
 - OLLAMA_MODEL: Ollama model name (default: neural-chat)
-- OPENAI_API_KEY: OpenAI API key (required for production)
+- OPENAI_API_KEY: OpenAI API key (required for openai provider)
+- GEMINI_API_KEY: Google Gemini API key (required for gemini provider)
+- GEMINI_MODEL: Gemini model name (default: gemini-1.5-flash)
 """
 
 import requests
@@ -22,6 +25,8 @@ LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama").lower()
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "neural-chat")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 REQUEST_TIMEOUT = 30
 
 
@@ -37,6 +42,8 @@ def call_llm(prompt: dict) -> str:
     """
     if LLM_PROVIDER == "openai":
         return _call_openai(prompt)
+    elif LLM_PROVIDER == "gemini":
+        return _call_gemini(prompt)
     elif LLM_PROVIDER == "ollama":
         return _call_ollama(prompt)
     else:
@@ -152,6 +159,64 @@ def _call_openai(prompt: dict) -> str:
             return _fallback_response("OpenAI API rate limit exceeded. Please try again later.")
         else:
             return _fallback_response(f"OpenAI error: {error_msg}")
+
+
+def _call_gemini(prompt: dict) -> str:
+    """
+    Calls Google Gemini API with structured prompt.
+    Used for production deployment.
+    
+    Requires: GEMINI_API_KEY environment variable
+    
+    Args:
+        prompt: dict with 'system', 'user', 'context' keys
+    
+    Returns:
+        LLM response text
+    """
+    if not GEMINI_API_KEY:
+        return _fallback_response(
+            "Gemini API key not configured. Set GEMINI_API_KEY environment variable."
+        )
+    
+    try:
+        import google.generativeai as genai
+        
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel(GEMINI_MODEL)
+        
+        system = prompt.get("system", "")
+        user = prompt.get("user", "")
+        context = prompt.get("context", "")
+        
+        # Build full prompt for Gemini
+        full_prompt = f"{system}\n\n{context}\n\nUser Question: {user}"
+        
+        response = model.generate_content(
+            full_prompt,
+            generation_config={
+                "temperature": 0.2,
+                "max_output_tokens": 1000,
+            }
+        )
+        
+        llm_response = response.text.strip()
+        if not llm_response:
+            return _fallback_response("Gemini returned empty response")
+        return llm_response
+        
+    except ImportError:
+        return _fallback_response("Gemini library not installed. Run: pip install google-generativeai")
+    except Exception as e:
+        error_msg = str(e)
+        if "invalid_api_key" in error_msg.lower() or "api_key" in error_msg.lower():
+            return _fallback_response("Invalid Gemini API key")
+        elif "quota" in error_msg.lower() or "rate" in error_msg.lower():
+            return _fallback_response("Gemini API quota exceeded. Please try again later.")
+        elif "safety" in error_msg.lower():
+            return _fallback_response("Response blocked by Gemini safety filters. Please rephrase your question.")
+        else:
+            return _fallback_response(f"Gemini error: {error_msg}")
 
 
 def _fallback_response(reason: str) -> str:
