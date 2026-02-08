@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from app.api import auth, transactions, budgets, budget_insights, budget_suggestions, analytics, accounts, savings, goals, goal_insights, goal_budget_link, savings_detection, chat
 from app.core.database import Base, engine
+from app.core.schema_sync import ensure_schema
 
 from app.models import user, account, category, transaction, budget, goal
 
@@ -50,8 +51,12 @@ app.include_router(chat.router)
 
 @app.on_event("startup")
 def create_tables():
-    """Ensure database tables exist before serving requests."""
-    Base.metadata.create_all(bind=engine)
+    """Ensure database schema is in sync before serving requests."""
+    ensure_schema(
+        engine,
+        Base,
+        auto_add_missing_columns=settings.AUTO_SCHEMA_UPDATE
+    )
 
 @app.get("/")
 def root():

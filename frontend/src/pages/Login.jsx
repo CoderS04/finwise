@@ -20,7 +20,11 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      <h2>Login to Finwise</h2>
+      <div className="auth-brand">
+        <img src="/logo.png" alt="Finzo" className="auth-logo" />
+        <p className="auth-tagline">budget smarter not harder</p>
+      </div>
+      <h2>Login to Finzo</h2>
 
       <form onSubmit={handleLogin}>
         <input

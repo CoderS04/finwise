@@ -78,8 +78,10 @@ export default function Auth({ setIsAuthenticated }) {
         <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white border-opacity-20">
           {/* Logo/Title */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Finwise</h1>
-            <p className="text-blue-100 text-sm">Your Personal Finance Assistant</p>
+            <div className="flex items-center justify-center mb-3">
+              <img src="/logo.png" alt="Finzo" className="h-12 w-auto" />
+            </div>
+            <p className="text-blue-100 text-sm font-semibold italic">budget smarter not harder</p>
           </div>
 
           {/* Tabs */}

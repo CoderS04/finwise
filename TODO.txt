@@ -11,6 +11,7 @@ Working on:
 //Create account after new registration
 //Manage accounts page
 Decide what happens when account is deleted (transactions, user profile, savings, etc.)
+Implement alembic
 Goal Planning System + LLM integration
 AI Chatbot - backend ready, check how to deploy llm on cloud, add frontend, build a robust chatbot with better understanding and more detailed responses.
 Payment Gateway / Create transaction

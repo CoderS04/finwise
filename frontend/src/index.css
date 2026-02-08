@@ -41,3 +41,25 @@
 .slide-in {
   animation: slideIn 0.3s ease-in-out;
 }
+
+/* Auth branding (Login/Register pages) */
+.auth-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.auth-logo {
+  height: 48px;
+  width: auto;
+}
+
+.auth-tagline {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-style: italic;
+  color: #1f2937;
+  text-align: center;
+}

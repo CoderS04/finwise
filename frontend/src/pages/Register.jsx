@@ -20,7 +20,11 @@ const Register = () => {
 
   return (
     <div className="auth-container">
-      <h2>Create Finwise Account</h2>
+      <div className="auth-brand">
+        <img src="/logo.png" alt="Finzo" className="auth-logo" />
+        <p className="auth-tagline">budget smarter not harder</p>
+      </div>
+      <h2>Create Finzo Account</h2>
 
       <form onSubmit={handleRegister}>
         <input

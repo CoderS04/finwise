@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = True
     RATE_LIMIT_REQUESTS_PER_MINUTE: int = 10
+
+    # Schema Sync
+    AUTO_SCHEMA_UPDATE: bool = False
     
     # Debug
     DEBUG: bool = False
