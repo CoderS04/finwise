@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Iterable
 from sqlalchemy import inspect, text
-from sqlalchemy.schema import Column, Table
+from sqlalchemy.schema import Column, Table, DefaultClause
 
 
 def ensure_schema(engine, base, auto_add_missing_columns: bool = False) -> None:
@@ -38,8 +38,17 @@ def ensure_schema(engine, base, auto_add_missing_columns: bool = False) -> None:
                     col_type = prepared.type.compile(dialect=engine.dialect)
                     nullable = "NULL" if prepared.nullable else "NOT NULL"
                     default_clause = ""
+                    
+                    # Check for existing server_default or our custom _server_default_value
                     if prepared.server_default is not None:
-                        default_clause = f" DEFAULT {prepared.server_default.arg}"
+                        # Extract the default value from server_default
+                        if isinstance(prepared.server_default, DefaultClause):
+                            default_value = str(prepared.server_default.arg)
+                        else:
+                            default_value = str(prepared.server_default)
+                        default_clause = f" DEFAULT {default_value}"
+                    elif hasattr(prepared, '_server_default_value'):
+                        default_clause = f" DEFAULT {prepared._server_default_value}"
                     
                     add_col_sql = f'ALTER TABLE "{table.name}" ADD COLUMN "{prepared.name}" {col_type} {nullable}{default_clause}'
                     conn.execute(text(add_col_sql))
@@ -68,7 +77,8 @@ def _prepare_column_for_add(column):
 
     if not new_column.nullable:
         if new_column.default is not None and getattr(new_column.default, "is_scalar", False):
-            new_column.server_default = _to_server_default(new_column.default.arg)
+            # Store the default value as a string, not a TextClause
+            new_column._server_default_value = _to_server_default(new_column.default.arg)
         else:
             new_column.nullable = True
 
@@ -76,8 +86,9 @@ def _prepare_column_for_add(column):
 
 
 def _to_server_default(value):
+    """Convert a Python value to a server default string (not wrapped in text())."""
     if isinstance(value, str):
-        return text(f"'{value}'")
+        return f"'{value}'"
     if isinstance(value, bool):
-        return text("true" if value else "false")
-    return text(str(value))
+        return "true" if value else "false"
+    return str(value)
