@@ -38,7 +38,7 @@ def ensure_schema(engine, base, auto_add_missing_columns: bool = False) -> None:
                     col_type = prepared.type.compile(dialect=engine.dialect)
                     nullable = "NULL" if prepared.nullable else "NOT NULL"
                     default_clause = ""
-                    if prepared.server_default:
+                    if prepared.server_default is not None:
                         default_clause = f" DEFAULT {prepared.server_default.arg}"
                     
                     add_col_sql = f'ALTER TABLE "{table.name}" ADD COLUMN "{prepared.name}" {col_type} {nullable}{default_clause}'
