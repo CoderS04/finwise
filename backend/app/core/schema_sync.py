@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Iterable
 from sqlalchemy import inspect, text
-from sqlalchemy.schema import AddColumn
+from sqlalchemy.schema import Column, Table
 
 
 def ensure_schema(engine, base, auto_add_missing_columns: bool = False) -> None:
@@ -34,7 +34,15 @@ def ensure_schema(engine, base, auto_add_missing_columns: bool = False) -> None:
                     missing_columns.append((table.name, column.name))
                     continue
                 with engine.begin() as conn:
-                    conn.execute(AddColumn(table, prepared))
+                    # Use raw SQL to add column
+                    col_type = prepared.type.compile(dialect=engine.dialect)
+                    nullable = "NULL" if prepared.nullable else "NOT NULL"
+                    default_clause = ""
+                    if prepared.server_default:
+                        default_clause = f" DEFAULT {prepared.server_default.arg}"
+                    
+                    add_col_sql = f'ALTER TABLE "{table.name}" ADD COLUMN "{prepared.name}" {col_type} {nullable}{default_clause}'
+                    conn.execute(text(add_col_sql))
             else:
                 missing_columns.append((table.name, column.name))
 
