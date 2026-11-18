@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, Float, String, DateTime, ForeignKey
-from datetime import datetime
+from sqlalchemy import Column, Integer, Float, String, Date, ForeignKey, Boolean
 from app.core.database import Base
 
 class Goal(Base):
@@ -7,8 +6,18 @@ class Goal(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    goal_name = Column(String)
-    target_amount = Column(Float)
+    
+    name = Column(String, nullable=False)
+    goal_type = Column(String)  # savings, travel, emergency, purchase
+    priority = Column(String)   # high, medium, low
+
+    target_amount = Column(Float, nullable=False)
     current_amount = Column(Float, default=0)
-    target_date = Column(DateTime)
-    created_at = Column(DateTime, default=datetime.utcnow)
+
+    target_date = Column(Date, nullable=False)
+    is_completed = Column(Boolean, default=False)
+
+    @property
+    def deadline_exceeded(self):
+        from datetime import date
+        return self.target_date < date.today() and not self.is_completed

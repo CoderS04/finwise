@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
-from app.api import auth, transactions, budgets, budget_insights, budget_suggestions, analytics, accounts
+from app.api import auth, transactions, budgets, budget_insights, budget_suggestions, analytics, accounts, savings, goals, goal_insights, goal_budget_link, savings_detection, chat
 from app.core.database import Base, engine
+from app.core.schema_sync import ensure_schema
+from sqlalchemy.exc import OperationalError
 
 from app.models import user, account, category, transaction, budget, goal
 
@@ -41,13 +43,29 @@ app.include_router(budget_insights.router)
 app.include_router(budget_suggestions.router)
 app.include_router(analytics.router)
 app.include_router(accounts.router)
-
-print(settings.DATABASE_URL)
+app.include_router(savings.router)
+app.include_router(savings_detection.router)
+app.include_router(goals.router)
+app.include_router(goal_insights.router)
+app.include_router(goal_budget_link.router)
+app.include_router(chat.router)
 
 @app.on_event("startup")
 def create_tables():
-    """Ensure database tables exist before serving requests."""
-    Base.metadata.create_all(bind=engine)
+    """Ensure database schema is in sync before serving requests."""
+    try:
+        ensure_schema(
+            engine,
+            Base,
+            auto_add_missing_columns=settings.AUTO_SCHEMA_UPDATE
+        )
+    except OperationalError as exc:
+        raise RuntimeError(
+            "Database connection failed. Verify that Render's DATABASE_URL "
+            "points to an active database and that the web service and database "
+            "are in the same region/network. For external connections, use the "
+            "Render external database URL."
+        ) from exc
 
 @app.get("/")
 def root():

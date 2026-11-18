@@ -33,6 +33,7 @@ def create_account(
         account_name=payload.account_name,
         account_type=payload.account_type,
         currency=payload.currency or "INR",
+        balance=payload.initial_balance
     )
     db.add(new_account)
     db.commit()

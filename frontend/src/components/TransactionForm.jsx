@@ -16,6 +16,7 @@ const TransactionForm = ({ onSave, initialData, mode = "create" }) => {
   const [categories, setCategories] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -54,6 +55,15 @@ const TransactionForm = ({ onSave, initialData, mode = "create" }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    if (!form.amount || Number(form.amount) <= 0) {
+      setError('Amount must be greater than zero');
+      return;
+    }
+    if (!form.transaction_date) {
+      setError('Transaction date is required');
+      return;
+    }
     setSaving(true);
     try {
       if (mode === "edit" && initialData?.id) {
@@ -63,6 +73,8 @@ const TransactionForm = ({ onSave, initialData, mode = "create" }) => {
       }
       onSave?.();
       if (mode === "create") setForm(emptyForm);
+    } catch (err) {
+      setError(err?.response?.data?.detail || 'Failed to save transaction');
     } finally {
       setSaving(false);
     }
@@ -73,6 +85,7 @@ const TransactionForm = ({ onSave, initialData, mode = "create" }) => {
       <h3 className="text-lg font-semibold text-gray-800">
         {mode === "edit" ? "Edit Transaction" : "Add Transaction"}
       </h3>
+      {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>

@@ -4,7 +4,7 @@ from app.services.ml_categorizer import ml_predict_category
 # from ml_categorizer import ml_predict_category
 
 # CONFIDENCE_THRESHOLD = 0.6
-CONFIDENCE_THRESHOLD = 0.25
+CONFIDENCE_THRESHOLD = 0.7
 # CONFIDENCE_MARGIN = 0.08
 
 def categorize_transaction(description: str):

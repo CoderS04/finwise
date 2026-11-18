@@ -1,0 +1,155 @@
+feat: implement hybrid LLM deployment (Ollama + OpenAI)
+
+BREAKING CHANGE: None - fully backward compatible
+
+## Changes
+
+### Code Updates
+- **backend/app/ai/llm_client.py**: Refactored to support multiple LLM providers
+  - Adds provider routing based on LLM_PROVIDER environment variable
+  - Implements _call_openai() for production OpenAI API
+  - Refactors _call_ollama() for local development
+  - Maintains same call_llm() interface (no changes needed elsewhere)
+  - Improved error handling with provider-specific messages
+
+- **backend/requirements.txt**: Added OpenAI dependency
+  - Added: openai==1.59.3
+
+### Configuration & Documentation
+- **backend/.env.example**: New environment configuration template
+  - Documents all LLM_PROVIDER settings
+  - Shows examples for both Ollama and OpenAI
+
+- **LLM_DEPLOYMENT.md**: New comprehensive deployment guide
+  - Ollama setup for local development
+  - OpenAI setup for production
+  - API key management best practices
+  - Cost optimization strategies
+  - Monitoring and debugging guidance
+
+- **DEPLOYMENT_EXAMPLES.md**: New platform-specific deployment scripts
+  - Docker & Docker Compose examples
+  - Kubernetes deployment manifests
+  - AWS Lambda serverless deployment
+  - Heroku deployment guide
+  - Cost monitoring setup
+  - Rollback procedures
+
+- **HYBRID_DEPLOYMENT_SUMMARY.md**: Implementation overview
+  - Quick start guides
+  - Provider comparison table
+  - File change summary
+  - Testing instructions
+
+- **QUICK_REFERENCE.md**: Quick start cheat sheet
+  - One-minute setup guide
+  - Configuration comparison
+  - Troubleshooting checklist
+  - Security notes
+
+## How It Works
+
+### Local Development (No Changes)
+```bash
+# Continues to work as before
+ollama serve
+uvicorn app.main:app --reload
+```
+
+### Production Deployment
+```bash
+export LLM_PROVIDER=openai
+export OPENAI_API_KEY=sk-proj-your-key-here
+# Deploy with Docker, Kubernetes, Lambda, etc.
+```
+
+## Backward Compatibility
+
+✅ **Fully backward compatible**
+- Default provider is Ollama (existing behavior)
+- No changes needed in chat_controller.py
+- No API signature changes
+- All existing code works unchanged
+- Just add environment variables for production
+
+## Testing
+
+### Local (Ollama)
+```bash
+LLM_PROVIDER=ollama  # Default
+# Chat endpoint works as before
+```
+
+### Production (OpenAI)
+```bash
+LLM_PROVIDER=openai
+OPENAI_API_KEY=sk-proj-...
+# Same chat endpoint, different provider
+```
+
+## Cost Analysis
+
+| Provider | Cost | Speed |
+|----------|------|-------|
+| Ollama | Free | 2-5s |
+| OpenAI (gpt-4o-mini) | ~$0.000045/request | 1-2s |
+
+Estimated monthly cost at 1,000 requests: ~$0.045
+
+## Security Considerations
+
+- ✅ API keys never committed to repo
+- ✅ Graceful error handling without exposing keys
+- ✅ Environment variable-based configuration
+- ✅ Supports secrets managers (K8s, AWS, etc.)
+- ✅ Fallback response when LLM unavailable
+
+## Migration Path
+
+1. **Current**: Development with Ollama (no changes needed)
+2. **Production**: Add OPENAI_API_KEY to secrets
+3. **Deployment**: Set LLM_PROVIDER=openai
+4. **Monitor**: Track usage via OpenAI dashboard
+5. **Optimize**: Adjust parameters as needed
+
+## Related Issues
+
+- Addresses deployment flexibility need
+- Enables cost-effective production deployment
+- Maintains development simplicity with free Ollama
+- Provides clear migration path for teams
+
+## Files Changed
+
+```
+backend/app/ai/llm_client.py          [MODIFIED]
+backend/requirements.txt              [MODIFIED]
+backend/.env.example                  [NEW]
+LLM_DEPLOYMENT.md                     [NEW]
+DEPLOYMENT_EXAMPLES.md                [NEW]
+HYBRID_DEPLOYMENT_SUMMARY.md          [NEW]
+QUICK_REFERENCE.md                    [NEW]
+```
+
+## Documentation
+
+Complete documentation in:
+- `QUICK_REFERENCE.md` - Start here
+- `LLM_DEPLOYMENT.md` - Detailed guide
+- `DEPLOYMENT_EXAMPLES.md` - Platform-specific examples
+
+## Checklist for Review
+
+- [ ] Code review of llm_client.py provider routing
+- [ ] Verify backward compatibility with existing endpoints
+- [ ] Test with Ollama locally
+- [ ] Test with OpenAI API in staging
+- [ ] Review error handling for both providers
+- [ ] Confirm documentation is clear
+- [ ] Check environment variable naming consistency
+
+---
+
+Co-authored-by: Finwise Team
+Deployment: Hybrid (Ollama + OpenAI)
+Reviewed-by: @coders04

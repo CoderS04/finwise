@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
+import ErrorBoundary from './components/ErrorBoundary'
 import AccountManager from './pages/AccountManager'
 import Dashboard from './pages/Dashboard'
 import ExpenseTracker from './pages/ExpenseTracker'
@@ -50,18 +51,20 @@ function App() {
           
           {/* Main Content */}
           <div className="flex-1 overflow-auto">
-            <Routes>
-              {/* First-time login: redirect to accounts */}
-              {firstLoginNoAccounts && <Route path="*" element={<Navigate to="/accounts" />} />}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/accounts" element={<AccountManager setFirstLoginNoAccounts={setFirstLoginNoAccounts} />} />
-              <Route path="/expenses" element={<ExpenseTracker />} />
-              <Route path="/budget" element={<BudgetPlanner />} />
-              <Route path="/goals" element={<GoalPlanning />} />
-              <Route path="/chat" element={<AiChat />} />
-              <Route path="/" element={<Navigate to={firstLoginNoAccounts ? "/accounts" : "/dashboard"} />} />
-              <Route path="*" element={<Navigate to={firstLoginNoAccounts ? "/accounts" : "/dashboard"} />} />
-            </Routes>
+            <ErrorBoundary>
+              <Routes>
+                {/* First-time login: redirect to accounts */}
+                {firstLoginNoAccounts && <Route path="*" element={<Navigate to="/accounts" />} />}
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/accounts" element={<AccountManager setFirstLoginNoAccounts={setFirstLoginNoAccounts} />} />
+                <Route path="/expenses" element={<ExpenseTracker />} />
+                <Route path="/budget" element={<BudgetPlanner />} />
+                <Route path="/goals" element={<GoalPlanning />} />
+                <Route path="/chat" element={<AiChat />} />
+                <Route path="/" element={<Navigate to={firstLoginNoAccounts ? "/accounts" : "/dashboard"} />} />
+                <Route path="*" element={<Navigate to={firstLoginNoAccounts ? "/accounts" : "/dashboard"} />} />
+              </Routes>
+            </ErrorBoundary>
           </div>
         </div>
       ) : (
